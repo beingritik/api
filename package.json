@@ -1,0 +1,28 @@
+{
+  "name": "express",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongodb": "^5.0.0",
+    "mongoose": "^6.9.1",
+    "nodemon": "^2.0.20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beingritik/mgmt-portal.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/beingritik/mgmt-portal/issues"
+  },
+  "homepage": "https://github.com/beingritik/mgmt-portal#readme",
+  "description": ""
+}
