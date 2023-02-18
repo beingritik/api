@@ -64,8 +64,6 @@ userSchema.methods.comparePassword = async (enteredPassword) => {
   }
 };
 
-module.exports = mongoose.model("User", userSchema);
-
 
 class User {
   constructor(name,email,password,username){
@@ -76,7 +74,7 @@ class User {
   }
 
   saveData(){
-    console.log("inserting")
+    console.log("inserting");
   }
 
   comparePassword(enteredPassword){
@@ -91,4 +89,6 @@ class User {
 
 }
 
+
+module.exports = mongoose.model("User", userSchema);
 module.exports = User;
