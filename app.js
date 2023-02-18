@@ -1,45 +1,40 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-app.get(express.json());
-// const controllerVar = require("./controllers/admin");
-const dbConnection = require("./db/connect");
-const adminRouterVar = require("./routes/adminRouter");
+const adminRouter = require('./routes/adminRouter')
 
+app.get(express.json());
+//Required dependencies 
+const dbConnection = require("./db/connect");
+
+
+app.use('/user',adminRouter);
+
+//common route for dashboard
 app.get("/", async (req, res) => {
   res.send("Dashboard");
 });
 
-app.use("/student", adminRouterVar.router);
-
+//Calling the port 
 const port = process.env.PORT || 3001;
-
 app.listen(port,()=>{
   console.log(`Server is listening on ${port}`);
-})
+});
 
+//function for creating the database connection
 const start_function =async()=>{
   try {
     await dbConnection.connectDb(process.env.MONGO_URI)
     .then((result) => {
-      console.log("connected to Mongodb=", result);
+      console.log("Connected to Mongodb with =", result.connections[0]._connectionString);
     });
   } catch (err) {
     console.log("error in calling start_function in app.js", err);
+    throw new err;
   }
 };
 
 start_function();
-   
-// const port = process.env.PORT || 3001;
-// const start_function= async function(){
-//     try{
-//       dbConnection.mongoConnect(()=>{
-//        app.listen(port, () => {
-//          console.log(`Server is listening on port ${port}...`);
-//        });
-//       })
-//     }
-//     catch(err){
-//       console.log("error in calling start_function in app.js",err);
-//     }
+
+
+ 

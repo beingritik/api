@@ -2,18 +2,7 @@ const mongoose = require("mongoose");
 // mongoose.set("strictQuery", false);
 const connectDb = (url) => {
   return mongoose.connect(url, {
-    // useNewUrlParser: true,     ======NO LONGER NECESSARY TO write here
-    // useCreateIndex: true,
-    // useFindAndModify: false,
-    // useUnifiedTopology: true,
   });
-    // .then((client) => {
-    //   // console.log("connected to mongo", client);
-    //   // console.log("connected to mongo");
-    // })
-    // .catch((err) => {
-    //   console.log("error in connecting database is:", err.message);
-    // });
 };
 
 module.exports = {
