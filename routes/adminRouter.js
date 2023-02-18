@@ -1,10 +1,10 @@
 const express = require("express");
-const router = express.Router();
+const adminRouter = express.Router();
 
-const controllerVar= require("../controllers/admin");
+//Required controllers for user
+const userControllerVar= require("../controllers/user");
 
-router.post("/register", controllerVar.registerUser);
+adminRouter
+.post("/register", userControllerVar.registerUser);
 
-module.exports = {
-  router
-};
+module.exports =  adminRouter;

@@ -4,10 +4,11 @@ const app = express();
 const adminRouter = require('./routes/adminRouter')
 
 app.get(express.json());
+
 //Required dependencies 
 const dbConnection = require("./db/connect");
 
-
+// Routes for user
 app.use('/user',adminRouter);
 
 //common route for dashboard
