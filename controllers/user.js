@@ -1,13 +1,14 @@
-const user = require('../models/user');
+const User = require("../models/user");
 
 const login = async function (req, res) {
   console.log("login user entered;");
 };
 
-const registerUser = async function (req, res) {
+const registerUser = async(req, res)=> {
+  console.log("registered user entered;",req.body);
   res.send("registered");
-  console.log("registered user entered;");
-  res.redirect("/");
+
+//  res.redirect("/");
 };
 
 module.exports = {

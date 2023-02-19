@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const adminRouter = require('./routes/adminRouter')
 
-app.get(express.json());
+app.use(express.json());
 
 //Required dependencies 
 const dbConnection = require("./db/connect");
@@ -31,7 +31,7 @@ const start_function =async()=>{
     });
   } catch (err) {
     console.log("error in calling start_function in app.js", err);
-    throw new err;
+    throw err;
   }
 };
 
