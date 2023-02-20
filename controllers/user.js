@@ -38,7 +38,7 @@ const registerUser = async function (req, res) {
         //closing the connection
         mongoose.connection.close(function () {
           console.log(
-            "closed with readystate =",
+            "connection closed with readystate =",
             mongoose.connection.readyState
           );
         });
