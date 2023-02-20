@@ -5,6 +5,6 @@ const adminRouter = express.Router();
 const userControllerVar= require("../controllers/user");
 
 adminRouter
-.post("/register", userControllerVar.registerUser);
+.post("/register", userControllerVar.registerUser)
 
 module.exports =  adminRouter;

@@ -53,7 +53,7 @@ userSchema.methods.createJWT = async () => {
     throw err;
   }
 };
-//COMparing passwords method in mongoose
+//Comparing passwords method in mongoose
 userSchema.methods.comparePassword = async (enteredPassword) => {
   try {
     const isMatch = bcrypt.compare(enteredPassword, this.password);
@@ -72,11 +72,10 @@ class User {
   this.password = password;
   this.username = username;
   }
-
   saveData(){
     console.log("inserting");
+    
   }
-
   comparePassword(enteredPassword){
   try {
     const isMatch = bcrypt.compare(enteredPassword, this.password);
@@ -86,9 +85,7 @@ class User {
     throw err;
   }
 };
-
 }
-
 
 module.exports = mongoose.model("User", userSchema);
 module.exports = User;
