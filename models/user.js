@@ -35,28 +35,14 @@ userSchema.pre("save", async function () {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   } catch (err) {
-    console.log("Error in encrypting password in model is= ", err.message);
-    throw err;
+    
   }
 });
 
-//creating jwt in mongoose
-userSchema.methods.createJWT = async () => {
-  try {
-    return jwt.sign(
-      { userID: this._id, name: this.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-  } catch (err) {
-    console.log("Error in creating JWT in user model is= ", err.message);
-    throw err;
-  }
-};
 //Comparing passwords method in mongoose
 userSchema.methods.comparePassword = async (enteredPassword) => {
   try {
-    const isMatch = bcrypt.compare(enteredPassword, this.password);
+    const isMatch = await bcrypt.compare(enteredPassword, this.password);
     return isMatch;
   } catch (err) {
     console.log("Error in comparing password in user model is= ", err.message);
@@ -65,27 +51,35 @@ userSchema.methods.comparePassword = async (enteredPassword) => {
 };
 
 
-class User {
-  constructor(name,email,password,username){
-  this.name = name;
-  this.email = email;
-  this.password = password;
-  this.username = username;
-  }
-  saveData(){
-    console.log("inserting");
-    
-  }
-  comparePassword(enteredPassword){
-  try {
-    const isMatch = bcrypt.compare(enteredPassword, this.password);
-    return isMatch;
-  } catch (err) {
-    console.log("Error in comparing password in user model is= ", err.message);
-    throw err;
-  }
-};
-}
+
+
+
+// //creating jwt in mongoose
+// userSchema.methods.createJWT = async () => {
+//   try {
+//     return jwt.sign(
+//       { userID: this._id, name: this.name },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "30d" }
+//     );
+//   } catch (err) {
+//     console.log("Error in creating JWT in user model is= ", err.message);
+//     throw err;
+//   }
+// };
+
+// class User {
+//   constructor(name,email,password,username){
+//   this.name = name;
+//   this.email = email;
+//   this.password = password;
+//   this.username = username;
+//   }
+//   saveData(){
+//     console.log("inserting");
+
+//   }
+// }
 
 module.exports = mongoose.model("User", userSchema);
-module.exports = User;
+// module.exports = User;

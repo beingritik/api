@@ -6,7 +6,6 @@ const adminRouter = require('./routes/adminRouter')
 app.use(express.json());
 
 //Required dependencies 
-const dbConnection = require("./db/connect");
 
 // Routes for user
 app.use('/user',adminRouter);
@@ -23,19 +22,6 @@ app.listen(port,()=>{
 });
 
 //function for creating the database connection
-const start_function =async()=>{
-  try {
-    await dbConnection.connectDb(process.env.MONGO_URI)
-    .then((result) => {
-      console.log("Connected to Mongodb with =", result.connections[0]._connectionString);
-    });
-  } catch (err) {
-    console.log("error in calling start_function in app.js", err);
-    throw err;
-  }
-};
-
-start_function();
 
 
  
