@@ -47,7 +47,7 @@ const registerUser = async function (req, res) {
   } catch (err) {
     console.log("Error in inserting in the db is= ", err.message);
     mongoose.connection.close(function () {
-      console.log("closed with readystate =", mongoose.connection.readyState);
+      console.log("Error came, connection closed with readystate =", mongoose.connection.readyState);
     });
     // throw err;
   }
