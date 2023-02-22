@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -14,7 +12,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, "Please provide email"],
+      required: [true, "Email is required"],
       match: [
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         "Please provide a valid email",
@@ -23,12 +21,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Please provide password"],
+      required: [true, "Password field shouldnt be empty."],
       minlength: 6,
     },
     username: {
       type: String,
-      required: true,
+      required: [true,"Username is required"],
       unique: true,
     },
   },
@@ -36,35 +34,26 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function () {
-  try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-  } catch (err) {}
 });
 
 //Comparing passwords method in mongoose
 userSchema.methods.comparePassword = async (enteredPassword) => {
-  try {
+  console.log("enteredpassword=", enteredPassword);
     const isMatch = await bcrypt.compare(enteredPassword, this.password);
+    console.log("ismactch=", isMatch);
     return isMatch;
-  } catch (err) {
-    console.log("Error in comparing password in user model is= ", err.message);
-    throw err;
-  }
 };
 
 // //creating jwt in mongoose
-// userSchema.methods.createJWT = async () => {
-//   try {
-//     return jwt.sign(
-//       { userID: this._id, name: this.name },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "30d" }
-//     );
-//   } catch (err) {
-//     console.log("Error in creating JWT in user model is= ", err.message);
-//     throw err;
-//   }
+userSchema.methods.createJWT = async () => {
+return jwt.sign(
+  {userId:this._id, name: this.name},
+  process.env.JWT_SECRET,
+  {expiresIn:process.env.JWT_LIFETIME}
+);
+}
 // };
 
 // class User {

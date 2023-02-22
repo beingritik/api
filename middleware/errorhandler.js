@@ -1,12 +1,43 @@
+// const { customApiError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
+const mongoose = require("mongoose");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
-    let customError = {
+  console.log("............................");
+  console.log("error in middleware is=", err);
+
+  let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong.try again",
-  };
+  }
 
-    return res.status(customError.statusCode).json({ msg: customError.msg });
+  if (err.name === "MongoParseError") {
+    customError.msg = "Database connection string (Mongo_URI) invalid, must have start with \'mongodb://\' or \'mongodb+srv://\'" 
+    customError.statusCode = StatusCodes.BAD_GATEWAY;
+  }
+  if (err.name === "ValidationError") {
+    customError.msg = Object.values(err.errors)
+    .map((item=>item.message))
+    .join(', ')
+    customError.statusCode = 400
+  }
+  
+  if (err.code && err.code === 11000) {
+    (customError.msg = `Duplicate value entered for ${Object.keys(
+      err.keyValue
+    )} field, please choose another value.`),
+      (customError.statusCode = 400);
+  }
+
+
+  //closing the connection if established , any error came 
+  mongoose.connection.close(function () {
+    console.log(
+      "Error came here, in errorhandler, connection closed with readystate =",
+      mongoose.connection.readyState
+    );
+  });
+  return res.status(customError.statusCode).json({ msg: customError.msg });
 };
 
-module.exports = {errorHandlerMiddleware};
+module.exports = { errorHandlerMiddleware };

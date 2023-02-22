@@ -1,24 +1,26 @@
 require("dotenv").config();
+require("express-async-errors");
 const express = require("express");
 const app = express();
-const adminRouter = require('./routes/adminRouter')
+const adminLoginRouter = require("./routes/adminloginrouter");
+const adminRouter = require("./routes/adminRouter");
 const notFoundMiddleware = require('./middleware/notFound');
-const errorHandlerMiddleware = require("./middleware/errorhandler");
+const {errorHandlerMiddleware} = require("./middleware/errorhandler");
 
 //Required dependencies 
 app.use(express.json());
 
 // Middlewares for user
 app.use('/user',adminRouter);
-
+app.use("/", adminLoginRouter);
 //common route for dashboard
-app.get("/", async (req, res) => {
-  res.send("Dashboard");
-});
+// app.get("/", async (req, res) => {
+//   res.send("Dashboard");
+// });
 
 //Midlewares for errors
 app.use(notFoundMiddleware);
-app.use(errorhandlerMiddleware);
+app.use(errorHandlerMiddleware);
 
 
 //Calling the port 
