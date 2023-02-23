@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Student = require("../models/student");
 const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
@@ -39,6 +40,28 @@ const createUser = async function (req, res) {
   }
 };
 
+//create new student
+const createStudent = async function (req, res) {
+
+    await start_function();
+    console.log("registered student entered with = ", req.params.id);
+      const createStudent = await Student.create({
+        userId: req.params.id,
+        ...req.body,
+      });
+      res.set("Content-Type", "application/json");
+      res.status(200).json(createStudent);
+      //closing the connection
+      mongoose.connection.close(function () {
+        console.log(
+          "MongoDb connection closed with readystate =",
+          mongoose.connection.readyState
+        );
+      });
+
+};
+
+
 //get all Users
 const getAllUsers = async function () {
   console.log("getall called");
@@ -47,4 +70,5 @@ const getAllUsers = async function () {
 module.exports = {
   createUser,
   getAllUsers,
+  createStudent,
 };
