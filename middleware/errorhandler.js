@@ -4,24 +4,26 @@ const mongoose = require("mongoose");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
   console.log("............................");
-  console.log("error in middleware is=", err);
+  console.log("error in middleware is=", err.stack);
 
   let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong.try again",
-  }
+  };
 
   if (err.name === "MongoParseError") {
-    customError.msg = "Database connection string (Mongo_URI) invalid, must have start with \'mongodb://\' or \'mongodb+srv://\'" 
+    customError.msg =
+      "Database connection string (Mongo_URI) invalid, must have start with 'mongodb://' or 'mongodb+srv://'";
     customError.statusCode = StatusCodes.BAD_GATEWAY;
   }
+
   if (err.name === "ValidationError") {
     customError.msg = Object.values(err.errors)
-    .map((item=>item.message))
-    .join(', ')
-    customError.statusCode = 400
+      .map((item) => item.message)
+      .join(", ");
+    customError.statusCode = 400;
   }
-  
+
   if (err.code && err.code === 11000) {
     (customError.msg = `Duplicate value entered for ${Object.keys(
       err.keyValue
@@ -29,14 +31,21 @@ const errorHandlerMiddleware = (err, req, res, next) => {
       (customError.statusCode = 400);
   }
 
-
-  //closing the connection if established , any error came 
-  mongoose.connection.close(function () {
-    console.log(
-      "Error came here, in errorhandler, connection closed with readystate =",
-      mongoose.connection.readyState
-    );
-  });
+  if (err.name === "CastError") {
+    customError.msg = `No item found with : ${err.value._id}`;
+    customError.statusCode = 404;
+  }
+  if (err.errors.reason === "BSONTypeError") {
+    customError.msg = `Cast to ObjectId failed for value : ${err.value}`;
+    customError.statusCode = 404;
+  }
+    //closing the connection if established , any error came
+    mongoose.connection.close(function () {
+      console.log(
+        "Error came here, in errorhandler, connection closed with readystate =",
+        mongoose.connection.readyState
+      );
+    });
   return res.status(customError.statusCode).json({ msg: customError.msg });
 };
 
