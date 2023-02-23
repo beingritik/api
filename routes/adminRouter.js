@@ -5,7 +5,7 @@ const adminRouter = express.Router();
 const userControllerVar= require("../controllers/user");
 
 adminRouter
-  .post("/createUser", userControllerVar.createUser)
+  .post("/createuser", userControllerVar.createUser)
   .get("/getall", userControllerVar.getAllUsers)
 
 

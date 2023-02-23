@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
@@ -26,34 +26,35 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      required: [true,"Username is required"],
+      required: [true, "Username is required"],
       unique: true,
     },
   },
   { timestamps: true }
 );
 
-userSchema.pre("save", async function () {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre('save', async function () {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  console.log("password pre wala= ",this.password)
 });
-
-//Comparing passwords method in mongoose
-userSchema.methods.comparePassword = async (enteredPassword) => {
-  console.log("enteredpassword=", enteredPassword);
-    const isMatch = await bcrypt.compare(enteredPassword, this.password);
-    console.log("ismactch=", isMatch);
-    return isMatch;
-};
 
 // //creating jwt in mongoose
 userSchema.methods.createJWT = async () => {
-return jwt.sign(
-  {userId:this._id, name: this.name},
-  process.env.JWT_SECRET,
-  {expiresIn:process.env.JWT_LIFETIME}
-);
-}
+  return jwt.sign(
+    { userId: this._id, name: this.name },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_LIFETIME }
+  );
+};
+
+//Comparing passwords method in mongoose
+userSchema.methods.comparePassword = async function(enteredPassword){
+  const isMatch = await bcrypt.compare(enteredPassword, this.password);
+  return isMatch;
+};
+
+
 // };
 
 // class User {
