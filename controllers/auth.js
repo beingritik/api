@@ -17,11 +17,11 @@ const start_function = async () => {
 //login of User
 const userLogin = async function (req, res) {
   try {
-    await start_function();
     const { email, password } = req.body;
     if (!email || !password) {
       throw new BadRequestError("Email and password shouldnt be empty.");
     }
+    await start_function();
     const user = await User.findOne({ email });
     if (!user) {
       // throw new BadRequestError("Please provide email ");
