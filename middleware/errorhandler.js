@@ -4,12 +4,14 @@ const mongoose = require("mongoose");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
   console.log("............................");
-  console.log("error in middleware is=", err.stack);
+  console.log("error in middleware is=", err);
 
   let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong.try again",
   };
+
+  // console.log("errorssss--", err.errors.kind);
 
   if (err.name === "MongoParseError") {
     customError.msg =
@@ -35,11 +37,15 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.msg = `No item found with : ${err.value._id}`;
     customError.statusCode = 404;
   }
-  if (err.errors.reason === "BSONTypeError") {
-    customError.msg = `Cast to ObjectId failed for value : ${err.value}`;
-    customError.statusCode = 404;
-  }
-    //closing the connection if established , any error came
+
+  // if (Object.values(err.errors)[0]=== "CastError") {
+  //   customError.msg = `Cast to ObjectId failed for value : ${err.value}`;
+  //   customError.statusCode = 404;
+  // }
+
+
+  //closing the connection if established , if any error came
+  if (mongoose.connection.readyState === 1)
     mongoose.connection.close(function () {
       console.log(
         "Error came here, in errorhandler, connection closed with readystate =",
@@ -47,6 +53,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
       );
     });
   return res.status(customError.statusCode).json({ msg: customError.msg });
+
 };
 
 module.exports = { errorHandlerMiddleware };

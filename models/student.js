@@ -7,7 +7,8 @@ const studentSchema = new mongoose.Schema(
     userId:{
         type: mongoose.Schema.Types.ObjectId,
         ref:'User',
-        required:true
+        required:true,
+        unique:true
     },
     aadharNumber: {
       type: Number,
@@ -19,9 +20,10 @@ const studentSchema = new mongoose.Schema(
     //   type: Date,
     //   required: [true, "Please provide D.O.B"],
     // },
-    // bloodGroup: {
-    //   type: String,
-    // },
+    bloodGroup: {
+      type: String,
+      required:true,
+    },
     // address: {
     //   type: String,
     //   maxlength: 100,
@@ -30,7 +32,6 @@ const studentSchema = new mongoose.Schema(
     // dept: {
     //   type: String,
     //   required: [true, "Department name is required"],
-    //   unique: true,
     // },
     // status: {
     //   type: String,

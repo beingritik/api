@@ -4,6 +4,7 @@ const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
+const { findById } = require("../models/user");
 
 //For establishing the connection.
 const start_function = async () => {
@@ -18,8 +19,8 @@ const start_function = async () => {
 //Create new user
 const createUser = async function (req, res) {
   try {
-    await start_function();
     console.log("registered user entered with");
+    await start_function();
     const savedUser = await User.create({
       ...req.body,
     });
@@ -42,25 +43,34 @@ const createUser = async function (req, res) {
 
 //create new student
 const createStudent = async function (req, res) {
-
-    await start_function();
+  try {
     console.log("registered student entered with = ", req.params.id);
+    if(mongoose.Types.ObjectId.isValid( req.params.id)){
+      // await start_function();
+      const validuser = Student.findById({userId:ObjectId(req.params.id)})
+      console.log("valisity--",validuser);
+      
+    }
       const createStudent = await Student.create({
         userId: req.params.id,
         ...req.body,
       });
-      res.set("Content-Type", "application/json");
-      res.status(200).json(createStudent);
-      //closing the connection
-      mongoose.connection.close(function () {
-        console.log(
-          "MongoDb connection closed with readystate =",
-          mongoose.connection.readyState
-        );
-      });
-
+      if (createStudent) {
+        res.set("Content-Type", "application/json");
+        res.status(StatusCodes.OK).json(createStudent);
+        //closing the connection
+        mongoose.connection.close(function () {
+          console.log(
+            "MongoDb connection closed with readystate =",
+            mongoose.connection.readyState
+          );
+        });
+      }  
+  } catch (err) {
+    console.log("Error in creating student is - ", err.message);
+    throw err;
+  }
 };
-
 
 //get all Users
 const getAllUsers = async function () {
