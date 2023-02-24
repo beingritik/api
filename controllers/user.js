@@ -1,26 +1,16 @@
 const User = require("../models/user");
 const Student = require("../models/student");
-const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
-const { findById } = require("../models/user");
+const databaseVar = require("../db/database");
 
-//For establishing the connection.
-const start_function = async () => {
-  await dbConnection.connectDb(process.env.MONGO_URI).then((result) => {
-    console.log(
-      "Connected to Mongodb with =",
-      result.connections[0]._connectionString
-    );
-  });
-};
 
 //Create new user
 const createUser = async function (req, res) {
   try {
-    console.log("registered user entered with");
-    await start_function();
+    console.log("registered student entered with");
+    await databaseVar.database_connection();
     const savedUser = await User.create({
       ...req.body,
     });
@@ -28,12 +18,7 @@ const createUser = async function (req, res) {
       res.set("Content-Type", "application/json");
       res.status(200).json(savedUser);
       //closing the connection
-      mongoose.connection.close(function () {
-        console.log(
-          "MongoDb connection closed with readystate =",
-          mongoose.connection.readyState
-        );
-      });
+      databaseVar.database_disconnect();
     }
   } catch (err) {
     console.log("error in creating user in createuser is = ", err.message);
@@ -42,30 +27,83 @@ const createUser = async function (req, res) {
 };
 
 //create new student
+// const createStudent = async function (req, res) {
+//   try {
+//     console.log("creation of student entered with = ", req.params.id);
+//     const validuserId = mongoose.Types.ObjectId.isValid(req.params.id);
+//     if (validuserId) {
+//       await start_function();
+//       const validUser = await User.findOne({ _id: req.params.id }).then((result) => {
+//         console.log("result in user table=",result)
+//         return result;});
+//       if (validUser !== null) {
+//         console.log("creation starts");
+//         const createStudent = await Student.create({
+//           userId: req.params.id,
+//           ...req.body,
+//         });
+//         if (createStudent) {
+//           res.set("Content-Type", "application/json");
+//           res.status(StatusCodes.OK).json(createStudent);
+//           //closing the connection
+//           mongoose.connection.close(function () {
+//             console.log(
+//               "MongoDb connection closed with readystate =",
+//               mongoose.connection.readyState
+//             );
+//           });
+//         }
+//       } else {
+//         throw new BadRequestError(
+//           `No user exist with the given id ${req.params.id} in the params.`
+//         );
+//       }
+//     }
+//     else{
+//       throw new BadRequestError(`Invalid ID : ${req.params.id} in the params. `);
+//     }
+//   } catch (err) {
+//     console.log("Error in creating student is - ", err.message);
+//     throw err;
+//   }
+// };
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 const createStudent = async function (req, res) {
   try {
-    console.log("registered student entered with = ", req.params.id);
-    if(mongoose.Types.ObjectId.isValid( req.params.id)){
-      // await start_function();
-      const validuser = Student.findById({userId:ObjectId(req.params.id)})
-      console.log("valisity--",validuser);
-      
-    }
-      const createStudent = await Student.create({
-        userId: req.params.id,
-        ...req.body,
-      });
-      if (createStudent) {
-        res.set("Content-Type", "application/json");
-        res.status(StatusCodes.OK).json(createStudent);
-        //closing the connection
-        mongoose.connection.close(function () {
-          console.log(
-            "MongoDb connection closed with readystate =",
-            mongoose.connection.readyState
-          );
+    console.log("creation of student entered with = ", req.params.id);
+    const validuserId = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (validuserId) {
+      await databaseVar.database_connection();
+      const validUser = await User.findOne({ _id: req.params.id }).then(
+        (result) => {
+          console.log("result in user table=", result);
+          return result;
+        }
+      );
+      if (validUser !== null) {
+        console.log("creation starts");
+        const createStudent = await Student.create({
+          userId: req.params.id,
+          ...req.body,
         });
-      }  
+        if (createStudent) {
+          res.set("Content-Type", "application/json");
+          res.status(StatusCodes.OK).json(createStudent);
+          await databaseVar.database_disconnect();
+        }
+      } else {
+        databaseVar.database_disconnect();
+        throw new BadRequestError(
+          `No user exist with the given id ${req.params.id} in the params.`
+        );
+      }
+    } else {
+      throw new BadRequestError(
+        `Invalid ID : ${req.params.id} in the params. `
+      );
+    }
   } catch (err) {
     console.log("Error in creating student is - ", err.message);
     throw err;

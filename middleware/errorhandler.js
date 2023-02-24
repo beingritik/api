@@ -1,6 +1,7 @@
 // const { customApiError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const mongoose = require("mongoose");
+const databaseVar = require("../db/database");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
   console.log("............................");
@@ -10,8 +11,6 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong.try again",
   };
-
-  // console.log("errorssss--", err.errors.kind);
 
   if (err.name === "MongoParseError") {
     customError.msg =
@@ -29,7 +28,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   if (err.code && err.code === 11000) {
     (customError.msg = `Duplicate value entered for ${Object.keys(
       err.keyValue
-    )} field, please choose another value.`),
+    )}, please choose another valid value.`),
       (customError.statusCode = 400);
   }
 
@@ -43,17 +42,11 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   //   customError.statusCode = 404;
   // }
 
-
   //closing the connection if established , if any error came
-  if (mongoose.connection.readyState === 1)
-    mongoose.connection.close(function () {
-      console.log(
-        "Error came here, in errorhandler, connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
+  if (mongoose.connection.readyState == 1) {
+    databaseVar.database_disconnect();
+  }
   return res.status(customError.statusCode).json({ msg: customError.msg });
-
 };
 
 module.exports = { errorHandlerMiddleware };
