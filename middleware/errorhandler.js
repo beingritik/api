@@ -18,6 +18,13 @@ const errorHandlerMiddleware = (err, req, res, next) => {
       "Database connection string (Mongo_URI) invalid, must have start with 'mongodb://' or 'mongodb+srv://'";
     customError.statusCode = StatusCodes.BAD_GATEWAY;
   }
+  
+  if (err.name === "MongooseServerSelectionError") {
+    customError.msg =
+      "The hostname you have provided for your MongoDB deployment cannot be resolved by the client, check the URI.";
+    customError.statusCode = StatusCodes.BAD_GATEWAY;
+  }
+
 
   if (err.name === "ValidationError") {
     customError.msg = Object.values(err.errors)
@@ -34,7 +41,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   }
 
   if (err.name === "CastError") {
-    customError.msg = `No item found with : ${err.value._id}`;
+    customError.msg = `No item found with : ${err.value}`;
     customError.statusCode = 404;
   }
 
@@ -45,13 +52,15 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
 
   //closing the connection if established , if any error came
-  if (mongoose.connection.readyState === 1)
+  if (mongoose.connection.readyState == 1){
+    console.log("---------------------------------------------------------------")
     mongoose.connection.close(function () {
       console.log(
         "Error came here, in errorhandler, connection closed with readystate =",
         mongoose.connection.readyState
       );
     });
+  }
   return res.status(customError.statusCode).json({ msg: customError.msg });
 
 };

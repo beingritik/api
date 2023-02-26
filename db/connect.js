@@ -3,16 +3,9 @@ mongoose.set("strictQuery", false);
 
 //for establishing the connection
 const connectDb = (url) => {
-  return mongoose.connect(url, {
-  });
-
+  return mongoose.connect(url,{});
 };
 
-
-//closing the connection
-// const closeDb = async function () {
-//  return ;
-// };
 
 module.exports = {
   connectDb
