@@ -2,10 +2,9 @@ const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 //for establishing the connection
 const connectDb = (url) => {
-  return mongoose.connect(url, {
-  });
-
+  return mongoose.connect(url,{});
 };
+
 module.exports = {
   connectDb,
 };
@@ -17,40 +16,6 @@ module.exports = {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//closing the connection
-// const closeDb = async function () {
-//  return ;
-// };
 
 
 
