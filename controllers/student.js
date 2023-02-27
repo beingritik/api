@@ -1,32 +1,25 @@
 const Student = require("../models/student");
-const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
+const databaseVar = require("../db/database");
 
-//For establishing the connection.
-const start_function = async () => {
-  await dbConnection.connectDb(process.env.MONGO_URI).then((result) => {
-    console.log(
-      "Connected to Mongodb with =",
-      result.connections[0]._connectionString
-    );
-  });
-};
 
 //get single Student by Id
 const getStudent = async function (req, res) {
-  console.log("getStudent called", req.params.id);
+  // console.log("getStudent called", req.params.id);
   const {
     params: { id: studentId },
   } = req;
+
   const validStudent = mongoose.Types.ObjectId.isValid(studentId);
   if (validStudent) {
-    await start_function();
-    const student = await User.findOne({ _id: studentId })
-    .then((result) => {
-      return result;
-    });
+    await databaseVar.database_connection();
+    const student = await Student.findOne({ _id: studentId })
+      .populate("userId", ["-createdAt", "-updatedAt", "-__v"])
+      .then((result) => {
+        return result;
+      });
     // console.log("Deleted User--", deletedStudent);
     if (student === null) {
       throw new BadRequestError(`No student with this studentId: ${studentId}`);
@@ -34,45 +27,44 @@ const getStudent = async function (req, res) {
   } else {
     throw new BadRequestError(`Invalid ID passed in the params: ${studentId}`);
   }
-  mongoose.connection.close(function () {
-    console.log(
-      "MongoDb connection closed with readystate =",
-      mongoose.connection.readyState
-    );
-  });
+        databaseVar.database_disconnect();
+
 };
 
-//update single Student by Id (some information )
-const updateInfo = async function (req, res) {
-    console.log("getStudent called", req.params.id);
+// Update single student info by student (three fields only )
+  const updateInfo = async function (req, res) {
+    // console.log("update Info called ");
     const {
       params: { id: studentId },
+      body: { address, bloodgroup ,phone},
     } = req;
-    const validStudent = mongoose.Types.ObjectId.isValid(studentId);
-    if (validStudent) {
-      await start_function();
-      const student = await User.findOne({ _id: studentId })
-      .then((result) => {
+    let message = "Successfully Updated";
+    if (mongoose.Types.ObjectId.isValid(studentId)) {
+      await databaseVar.database_connection();
+      const updatedInfo = await Student.findByIdAndUpdate(
+        { _id: studentId },
+        {address:address,phone:phone,bloodgroup:bloodgroup},
+        { new: true, runValidators: true }
+      ).then((result) => {
+        // console.log("result in updation =",result);
         return result;
       });
-      // console.log("Deleted User--", deletedStudent);
-      if (student === null) {
-        throw new BadRequestError(`No student with this studentId: ${studentId}`);
-      } else res.status(StatusCodes.OK).json({ student });
+      if (updatedInfo === null) {
+        throw new BadRequestError(
+          `No Student with this id in the params :${studentId}`
+        );
+      } else {
+        res
+          .status(StatusCodes.OK)
+          .json({ updatedInfo, message: { message } });
+      }
+      databaseVar.database_disconnect();
     } else {
-      throw new BadRequestError(`Invalid ID passed in the params: ${studentId}`);
+      throw new BadRequestError(`Invalid studentId in the params:${studentId}`);
     }
-    mongoose.connection.close(function () {
-      console.log(
-        "MongoDb connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
   };
 
 module.exports = {
-
   getStudent,
   updateInfo
- 
 };

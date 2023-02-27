@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const studentSchema = new mongoose.Schema(
+const feedbackSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -68,13 +68,13 @@ const studentSchema = new mongoose.Schema(
       minlength: 10,
       maxlength: 10,
       trim: true,
-      required:true
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-studentSchema.pre("save", async function (next) {
+feedbackSchema.pre("save", async function (next) {
   this.status =
     this.status.charAt(0).toUpperCase() + this.status.slice(1).toLowerCase();
   this.address =
@@ -82,20 +82,20 @@ studentSchema.pre("save", async function (next) {
   next();
 });
 
-studentSchema.pre("findOneAndUpdate", async function (next) {
-  // console.log(this._update.status);
-  if (!this._update.status) return next();
-  if (this._update.status) {
-    this._update.status =
-      this._update.status.charAt(0).toUpperCase() +
-      this._update.status.slice(1).toLowerCase();
-  }
+// feedbackSchema.pre("findOneAndUpdate", async function (next) {
+//   // console.log(this._update.status);
+//   if (!this._update.status) return next();
+//   if (this._update.status) {
+//     this._update.status =
+//       this._update.status.charAt(0).toUpperCase() +
+//       this._update.status.slice(1).toLowerCase();
+//   }
 
-  if (this._update.address) {
-    this._update.address =
-      this._update.address.charAt(0).toUpperCase() +
-      this._update.address.slice(1).toLowerCase();
-  }
-});
+//   if (this._update.address) {
+//     this._update.address =
+//       this._update.address.charAt(0).toUpperCase() +
+//       this._update.address.slice(1).toLowerCase();
+//   }
+// });
 
-module.exports = mongoose.model("Student", studentSchema);
+module.exports = mongoose.model("Feedback", feedbackSchema);
