@@ -32,10 +32,42 @@ const getAllFeedback = async function (req, res) {
 const createFeedback = async function (req, res) {
   try {
     console.log("creation of feedback entered with ");
-    await databaseVar.database_connection();
-
+    const{
+      params:{id:userId}
+    }=req;
+  
+ const validuserId = mongoose.Types.ObjectId.isValid(userId);
+    if (validuserId) {
+      await databaseVar.database_connection();
+      const validUser = await User.findOne({ _id: userId }).then(
+        (result) => {
+          console.log("result in user table=", result);
+          return result;
+        }
+      );
+      if (validUser !== null) {
+        console.log("creation starts");
+        const createStudent = await Student.create({
+          userId: req.params.id,
+          ...req.body,
+        });
+        if (createStudent) {
+          res.set("Content-Type", "application/json");
+          res.status(StatusCodes.OK).json(createStudent);
+          await databaseVar.database_disconnect();
+        }
+      } else {
+        databaseVar.database_disconnect();
+        throw new BadRequestError(
+          `No user exist with the given id ${userId} in the params.`
+        );
+      }
+    } else {
+      throw new BadRequestError(
+        `Invalid ID : ${req.params.id} in the params. `
+      );
+    }
     databaseVar.database_disconnect();
-
   } catch (err) {
     console.log("Error in creating student is - ", err.message);
     throw err;
