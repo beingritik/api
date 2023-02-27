@@ -1,25 +1,16 @@
 const User = require("../models/user");
 const Student = require("../models/student");
-const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
+const databaseVar = require("../db/database");
 
-//For establishing the connection.
-const start_function = async () => {
-  await dbConnection.connectDb(process.env.MONGO_URI).then((result) => {
-    console.log(
-      "Connected to Mongodb with =",
-      result.connections[0]._connectionString
-    );
-  });
-};
 
 //Create new user
 const createUser = async function (req, res) {
   try {
-    console.log("registered user entered with");
-    await start_function();
+    console.log("registered student entered with");
+    await databaseVar.database_connection();
     const savedUser = await User.create({
       ...req.body,
     });
@@ -27,12 +18,7 @@ const createUser = async function (req, res) {
       res.set("Content-Type", "application/json");
       res.status(200).json(savedUser);
       //closing the connection
-      mongoose.connection.close(function () {
-        console.log(
-          "MongoDb connection closed with readystate =",
-          mongoose.connection.readyState
-        );
-      });
+      databaseVar.database_disconnect();
     }
   } catch (err) {
     console.log("error in creating user in createuser is = ", err.message);
@@ -40,52 +26,52 @@ const createUser = async function (req, res) {
   }
 };
 
-//create new student
+//create student thru UserId
 const createStudent = async function (req, res) {
   try {
-    console.log("registered student entered with = ", req.params.id);
-    const {
-      params: { id: userId },
-    } = req;
-    if (mongoose.Types.ObjectId.isValid(userId)) {
-      await start_function();
-      const validuser = await Student.findOne({ userId: userId }).then(
+    console.log("creation of student entered with = ", req.params.id);
+    const validuserId = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (validuserId) {
+      await databaseVar.database_connection();
+      const validUser = await User.findOne({ _id: req.params.id }).then(
         (result) => {
+          console.log("result in user table=", result);
           return result;
         }
       );
-      console.log("validity--", validuser);
-      if (validuser === null) {
+      if (validUser !== null) {
+        console.log("creation starts");
         const createStudent = await Student.create({
-          userId: userId,
+          userId: req.params.id,
           ...req.body,
         });
         if (createStudent) {
           res.set("Content-Type", "application/json");
           res.status(StatusCodes.OK).json(createStudent);
+          await databaseVar.database_disconnect();
         }
-        mongoose.connection.close(function () {
-          console.log(
-            "MongoDb connection closed with readystate =",
-            mongoose.connection.readyState
-          );
-        });
+      } else {
+        databaseVar.database_disconnect();
+        throw new BadRequestError(
+          `No user exist with the given id ${req.params.id} in the params.`
+        );
       }
-
-      //closing the connection
+    } else {
+      throw new BadRequestError(
+        `Invalid ID : ${req.params.id} in the params. `
+      );
     }
   } catch (err) {
     console.log("Error in creating student is - ", err.message);
     throw err;
   }
 };
-
 //get all Users
 const getAllUsers = async function (req, res) {
   try {
     console.log("getall called");
     const message = "No users to fetch. Please create users to be displayed.";
-    await start_function();
+    await databaseVar.database_connection();
     const users = await User.find({}).sort("createdAt");
     console.log("users are", users.length);
     let count = users.length;
@@ -98,12 +84,8 @@ const getAllUsers = async function (req, res) {
         .status(StatusCodes.OK)
         .json({ message: message, usersCount: { totalUsers: count } });
     }
-    mongoose.connection.close(function () {
-      console.log(
-        "MongoDb connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
+          databaseVar.database_disconnect();
+
   } catch (err) {
     console.log("Error in fetching users in  are:", err.message);
     throw err;
@@ -118,7 +100,7 @@ const deleteUser = async function (req, res) {
   } = req;
   const validUser = mongoose.Types.ObjectId.isValid(userId);
   if (validUser) {
-    await start_function();
+    await databaseVar.database_connection();
     const deletedUser = await User.findOneAndDelete({ _id: userId }).then(
       (result) => {
         return result;
@@ -142,12 +124,8 @@ const deleteUser = async function (req, res) {
           "Successfully deleted the user and the student associated with it.";
         res.status(StatusCodes.OK).json({ deletedUser, message: { message } });
       }
-      mongoose.connection.close(function () {
-        console.log(
-          "MongoDb connection closed with readystate =",
-          mongoose.connection.readyState
-        );
-      });
+            databaseVar.database_disconnect();
+
     }
   } else {
     throw new BadRequestError(`Invalid ID passed in the params ${userId}`);
@@ -160,7 +138,7 @@ const getAllStudents = async function (req, res) {
     console.log("getallstudents called");
     const message =
       "No Students to fetch. Please create Students to be displayed.";
-    await start_function();
+    await databaseVar.database_connection();
     const students = await Student.find({}).sort("createdAt");
     console.log("students are", students.length);
     let count = students.length;
@@ -173,12 +151,8 @@ const getAllStudents = async function (req, res) {
         .status(StatusCodes.OK)
         .json({ message: message, studentsCount: { totalStudents: count } });
     }
-    mongoose.connection.close(function () {
-      console.log(
-        "MongoDb connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
+          databaseVar.database_disconnect();
+
   } catch (err) {
     console.log("Error in fetching students in  are:", err.message);
     throw err;
@@ -194,7 +168,7 @@ const deleteStudent = async function (req, res) {
   let message = "Successfully deleted";
   const validStudent = mongoose.Types.ObjectId.isValid(studentId);
   if (validStudent) {
-    await start_function();
+    await databaseVar.database_connection();
     const deletedStudent = await Student.findOneAndDelete({
       _id: studentId,
     }).then((result) => {
@@ -208,12 +182,7 @@ const deleteStudent = async function (req, res) {
   } else {
     throw new BadRequestError(`Invalid ID passed in the params ${studentId}`);
   }
-  mongoose.connection.close(function () {
-    console.log(
-      "MongoDb connection closed with readystate =",
-      mongoose.connection.readyState
-    );
-  });
+        databaseVar.database_disconnect();
 };
 
 
@@ -226,7 +195,7 @@ const updateUser = async function (req, res) {
   } = req;
 
   if(mongoose.Types.ObjectId.isValid(userId)){
-    await start_function();
+    await databaseVar.database_connection();
     const updatedUser = await User.findByIdAndUpdate({_id:userId},
       req.body,
       { new: true, runValidators: true }
@@ -241,12 +210,8 @@ const updateUser = async function (req, res) {
       res.status(StatusCodes.OK).json({ updatedUser, message: { message } });
     }
 
-    mongoose.connection.close(function () {
-      console.log(
-        "MongoDb connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
+          databaseVar.database_disconnect();
+
   }else{
     throw new BadRequestError(`Invalid userId in the params:${userId}`);
   }
@@ -272,3 +237,8 @@ module.exports = {
   getAllStudents,
   updateStudent,
 };
+
+
+
+
+
