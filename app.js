@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const adminLoginRouter = require("./routes/adminloginrouter");
 const adminRouter = require("./routes/adminRouter");
+const studentRouter = require("./routes/studentRouter");
 const notFoundMiddleware = require('./middleware/notFound');
 const {errorHandlerMiddleware} = require("./middleware/errorhandler");
 
@@ -11,8 +12,9 @@ const {errorHandlerMiddleware} = require("./middleware/errorhandler");
 app.use(express.json());
 
 // Middlewares for user
-app.use('/user',adminRouter);
+app.use('/admin',adminRouter);
 app.use("/", adminLoginRouter);
+app.use("/student", studentRouter);
 //common route for dashboard
 // app.get("/", async (req, res) => {
 //   res.send("Dashboard");
