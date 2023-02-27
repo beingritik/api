@@ -9,7 +9,7 @@ const databaseVar = require("../db/database");
 //Create new user
 const createUser = async function (req, res) {
   try {
-    console.log("registered student entered with");
+    // console.log("registered student entered with");
     await databaseVar.database_connection();
     const savedUser = await User.create({
       ...req.body,
@@ -29,7 +29,7 @@ const createUser = async function (req, res) {
 //create student thru UserId
 const createStudent = async function (req, res) {
   try {
-    console.log("creation of student entered with = ", req.params.id);
+    // console.log("creation of student entered with = ", req.params.id);
     const validuserId = mongoose.Types.ObjectId.isValid(req.params.id);
     if (validuserId) {
       await databaseVar.database_connection();
@@ -66,10 +66,11 @@ const createStudent = async function (req, res) {
     throw err;
   }
 };
+
 //get all Users
 const getAllUsers = async function (req, res) {
   try {
-    console.log("getall called");
+    // console.log("getall called");
     const message = "No users to fetch. Please create users to be displayed.";
     await databaseVar.database_connection();
     const users = await User.find({}).sort("createdAt");
@@ -94,7 +95,7 @@ const getAllUsers = async function (req, res) {
 
 // delete single user
 const deleteUser = async function (req, res) {
-  console.log("deleteUser called", req.params.id);
+  // console.log("deleteUser called", req.params.id);
   const {
     params: { id: userId },
   } = req;
@@ -135,7 +136,7 @@ const deleteUser = async function (req, res) {
 //get all students
 const getAllStudents = async function (req, res) {
   try {
-    console.log("getallstudents called");
+    // console.log("getallstudents called");
     const message =
       "No Students to fetch. Please create Students to be displayed.";
     await databaseVar.database_connection();
@@ -161,7 +162,7 @@ const getAllStudents = async function (req, res) {
 
 //delete single student
 const deleteStudent = async function (req, res) {
-  console.log("deleteStudent called", req.params.id);
+  // console.log("deleteStudent called", req.params.id);
   const {
     params: { id: studentId },
   } = req;
@@ -188,7 +189,7 @@ const deleteStudent = async function (req, res) {
 
 //update single user
 const updateUser = async function (req, res) {
-  console.log("update user called ");
+  // console.log("update user called ");
   let message = "Successfully Updated";
   const {
     params: { id: userId },
@@ -209,22 +210,41 @@ const updateUser = async function (req, res) {
     }else{
       res.status(StatusCodes.OK).json({ updatedUser, message: { message } });
     }
-
           databaseVar.database_disconnect();
-
   }else{
     throw new BadRequestError(`Invalid userId in the params:${userId}`);
   }
 };
 
 
-//update single student
+//update single student (with passing the student Id in the params)
 const updateStudent = async function (req, res) {
-  console.log("update Student called ");
+  // console.log("update Student called ");
   const {
     params: { id: studentId },
   } = req;
-
+    let message = "Successfully Updated";
+    if (mongoose.Types.ObjectId.isValid(studentId)) {
+      await databaseVar.database_connection();
+      const updatedStudent = await Student.findByIdAndUpdate(
+        { _id: studentId },
+        req.body,
+        { new: true, runValidators: true }
+      ).then((result) => {
+        // console.log("result in updation =",result);
+        return result;
+      });
+      if (updatedStudent === null) {
+        throw new BadRequestError(
+          `No Student with this id in the params :${studentId}`
+        );
+      } else {
+        res.status(StatusCodes.OK).json({ updatedStudent, message: { message } });
+      }
+      databaseVar.database_disconnect();
+    } else {
+      throw new BadRequestError(`Invalid studentId in the params:${studentId}`);
+    }
 };
 
 module.exports = {

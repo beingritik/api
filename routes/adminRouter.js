@@ -2,7 +2,8 @@ const express = require("express");
 const adminRouter = express.Router();
 
 //Required controllers for admin
-const adminControllerVar= require("../controllers/admin");
+const adminControllerVar = require("../controllers/admin");
+const feedbackControllerVar = require("../controllers/feedback");
 
 adminRouter
   .post("/createuser", adminControllerVar.createUser)
@@ -13,5 +14,6 @@ adminRouter
   .get("/getallstudents", adminControllerVar.getAllStudents)
   .post("/updateuser/:id", adminControllerVar.updateUser)
   .post("/updatestudent/:id", adminControllerVar.updateStudent)
+  .get("/getallfeedback", feedbackControllerVar.getAllFeedback)
 
 module.exports =  adminRouter;
