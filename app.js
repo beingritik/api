@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Middlewares for user
 app.use('/admin',adminRouter);
-app.use("/", adminLoginRouter);
+app.use("", adminLoginRouter);
 app.use("/student", studentRouter);
 //common route for dashboard
 // app.get("/", async (req, res) => {

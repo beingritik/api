@@ -1,18 +1,10 @@
 const User = require("../models/user");
-const dbConnection = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
+const databaseVar = require("../db/database");
 
-//For establishing the connection.
-const start_function = async () => {
-  await dbConnection.connectDb(process.env.MONGO_URI).then((result) => {
-    console.log(
-      "Connected to Mongodb with =",
-      result.connections[0]._connectionString
-    );
-  });
-};
+
 
 //login of User
 const userLogin = async function (req, res) {
@@ -21,7 +13,7 @@ const userLogin = async function (req, res) {
     if (!email || !password) {
       throw new BadRequestError("Email and password shouldnt be empty.");
     }
-    await start_function();
+    await databaseVar.database_connection();
     const user = await User.findOne({ email });
     if (!user) {
       // throw new BadRequestError("Please provide email ");
@@ -44,12 +36,8 @@ const userLogin = async function (req, res) {
         token,
       });
     });
-    mongoose.connection.close(function () {
-      console.log(
-        "MongoDb connection closed with readystate =",
-        mongoose.connection.readyState
-      );
-    });
+      databaseVar.database_disconnect();
+
   } catch (err) {
     console.log("error in adminLogin function is=", err.message);
     throw err;

@@ -48,10 +48,23 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function (next) {
   // console.log("ismodi--",isModified('password'))
+  // if (!this.isModified("password")) return next();
   this.name = this.name.charAt(0).toUpperCase() + this.name.slice(1).toLowerCase();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
+});
+
+userSchema.pre('findOneAndUpdate', async function(next) {
+  const update = this.getUpdate();
+  // console.log(this);
+  if (!this._update.password) return next();
+
+  if (this._update.password  ) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(update.password, salt);
+    update.password = hashedPassword;
+  }
 });
 
 
