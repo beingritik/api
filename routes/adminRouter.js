@@ -15,5 +15,7 @@ adminRouter
   .post("/updateuser/:id", adminControllerVar.updateUser)
   .post("/updatestudent/:id", adminControllerVar.updateStudent)
   .get("/getallfeedback", feedbackControllerVar.getAllFeedback)
+  .get("/deletefeedback/:id", feedbackControllerVar.deleteFeedback);
+
 
 module.exports =  adminRouter;

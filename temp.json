@@ -3,7 +3,9 @@
         "name":"ritik",
         "email":"ritikjain98.r@gmail.com",
         "password":"123456",
-        "username":"ritikj"
+        "username":"ritikj",
+        "dept":"Mca",
+        "status":"active"
                },
         
         "student":
@@ -12,7 +14,6 @@
                 "dob": "2022-09-12",
                 "bloodgroup": "          b+VE                     ",
                 "address": "                   near nO. 1 School,Tijara",
-                "dept": "         bba" ,
                 "status": "",
                 "rollno": "  1234423",
                 "admdate": "2022-10-23",

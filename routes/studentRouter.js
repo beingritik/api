@@ -9,6 +9,6 @@ studentRouter
   //for ID card
   .get("/getstudent/:id", studentControllerVar.getStudent)
   .post("/updateinfo/:id", studentControllerVar.updateInfo)
-  .post("/createfeedback", feedbackController.createFeedback)
+  .post("/createfeedback/:id", feedbackController.createFeedback)
 
 module.exports =  studentRouter;
