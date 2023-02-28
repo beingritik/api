@@ -5,7 +5,6 @@ const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
 const databaseVar = require("../db/database");
 
-
 //Create new user
 const createUser = async function (req, res) {
   try {
@@ -30,36 +29,43 @@ const createUser = async function (req, res) {
 const createStudent = async function (req, res) {
   try {
     // console.log("creation of student entered with = ", req.params.id);
-    const validuserId = mongoose.Types.ObjectId.isValid(req.params.id);
+    const {
+      params: { id: userId },
+    } = req;
+    const validuserId = mongoose.Types.ObjectId.isValid(userId);
     if (validuserId) {
       await databaseVar.database_connection();
-      const validUser = await User.findOne({ _id: req.params.id }).then(
-        (result) => {
-          console.log("result in user table=", result);
-          return result;
-        }
-      );
+      const validUser = await User.findOne({ _id: userId }).then((result) => {
+        console.log("result in user table=", result);
+        return result;
+      });
+      console.log("valid=", validUser);
+
       if (validUser !== null) {
-        console.log("creation starts");
-        const createStudent = await Student.create({
-          userId: req.params.id,
-          ...req.body,
-        });
-        if (createStudent) {
-          res.set("Content-Type", "application/json");
-          res.status(StatusCodes.OK).json(createStudent);
-          await databaseVar.database_disconnect();
+        if (validUser.status == "active") {
+          console.log("creation of student starts");
+          const createStudent = await Student.create({
+            userId: userId,
+            ...req.body,
+          });
+          if (createStudent) {
+            res.set("Content-Type", "application/json");
+            res.status(StatusCodes.OK).json(createStudent);
+            await databaseVar.database_disconnect();
+          }
+        }
+        else{
+          databaseVar.database_disconnect();
+          throw new BadRequestError("This user is Inactive.")
         }
       } else {
         databaseVar.database_disconnect();
         throw new BadRequestError(
-          `No user exist with the given id ${req.params.id} in the params.`
+          `No user exist with the given id ${userId} in the params.`
         );
       }
     } else {
-      throw new BadRequestError(
-        `Invalid ID : ${req.params.id} in the params. `
-      );
+      throw new BadRequestError(`Invalid ID : ${userId} in the params. `);
     }
   } catch (err) {
     console.log("Error in creating student is - ", err.message);
@@ -85,8 +91,7 @@ const getAllUsers = async function (req, res) {
         .status(StatusCodes.OK)
         .json({ message: message, usersCount: { totalUsers: count } });
     }
-          databaseVar.database_disconnect();
-
+    databaseVar.database_disconnect();
   } catch (err) {
     console.log("Error in fetching users in  are:", err.message);
     throw err;
@@ -95,7 +100,7 @@ const getAllUsers = async function (req, res) {
 
 // delete single user
 const deleteUser = async function (req, res) {
-  // console.log("deleteUser called", req.params.id);
+  // console.log("deleteUser called", userId);
   const {
     params: { id: userId },
   } = req;
@@ -109,7 +114,7 @@ const deleteUser = async function (req, res) {
     );
     // console.log("Deleted User--", deletedUser);
     if (deletedUser === null) {
-      throw new BadRequestError(`No job with this userId: ${userId}`);
+      throw new BadRequestError(`No user with this userId: ${userId}`);
     } else {
       let message =
         "Successfully deleted , no Student associated with it yet till deletion.";
@@ -125,8 +130,7 @@ const deleteUser = async function (req, res) {
           "Successfully deleted the user and the student associated with it.";
         res.status(StatusCodes.OK).json({ deletedUser, message: { message } });
       }
-            databaseVar.database_disconnect();
-
+      databaseVar.database_disconnect();
     }
   } else {
     throw new BadRequestError(`Invalid ID passed in the params ${userId}`);
@@ -140,7 +144,9 @@ const getAllStudents = async function (req, res) {
     const message =
       "No Students to fetch. Please create Students to be displayed.";
     await databaseVar.database_connection();
-    const students = await Student.find({}).sort("createdAt");
+    const students = await Student.find({})
+      .sort("createdAt")
+      .populate("userId", ["-password", "-__v", "-createdAt", "-updatedAt"]);
     console.log("students are", students.length);
     let count = students.length;
     if (count > 0) {
@@ -152,8 +158,7 @@ const getAllStudents = async function (req, res) {
         .status(StatusCodes.OK)
         .json({ message: message, studentsCount: { totalStudents: count } });
     }
-          databaseVar.database_disconnect();
-
+    databaseVar.database_disconnect();
   } catch (err) {
     console.log("Error in fetching students in  are:", err.message);
     throw err;
@@ -183,9 +188,8 @@ const deleteStudent = async function (req, res) {
   } else {
     throw new BadRequestError(`Invalid ID passed in the params ${studentId}`);
   }
-        databaseVar.database_disconnect();
+  databaseVar.database_disconnect();
 };
-
 
 //update single user
 const updateUser = async function (req, res) {
@@ -195,27 +199,28 @@ const updateUser = async function (req, res) {
     params: { id: userId },
   } = req;
 
-  if(mongoose.Types.ObjectId.isValid(userId)){
+  if (mongoose.Types.ObjectId.isValid(userId)) {
     await databaseVar.database_connection();
-    const updatedUser = await User.findByIdAndUpdate({_id:userId},
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: userId },
       req.body,
       { new: true, runValidators: true }
-      )
-    .then((result)=>{
+    ).then((result) => {
       // console.log("result in updation =",result);
       return result;
-    })
-    if(updatedUser ===null){
-      throw new BadRequestError(`No User with this id in the params :${userId}`)
-    }else{
+    });
+    if (updatedUser === null) {
+      throw new BadRequestError(
+        `No User with this id in the params :${userId}`
+      );
+    } else {
       res.status(StatusCodes.OK).json({ updatedUser, message: { message } });
     }
-          databaseVar.database_disconnect();
-  }else{
+    databaseVar.database_disconnect();
+  } else {
     throw new BadRequestError(`Invalid userId in the params:${userId}`);
   }
 };
-
 
 //update single student (with passing the student Id in the params)
 const updateStudent = async function (req, res) {
@@ -223,28 +228,28 @@ const updateStudent = async function (req, res) {
   const {
     params: { id: studentId },
   } = req;
-    let message = "Successfully Updated";
-    if (mongoose.Types.ObjectId.isValid(studentId)) {
-      await databaseVar.database_connection();
-      const updatedStudent = await Student.findByIdAndUpdate(
-        { _id: studentId },
-        req.body,
-        { new: true, runValidators: true }
-      ).then((result) => {
-        // console.log("result in updation =",result);
-        return result;
-      });
-      if (updatedStudent === null) {
-        throw new BadRequestError(
-          `No Student with this id in the params :${studentId}`
-        );
-      } else {
-        res.status(StatusCodes.OK).json({ updatedStudent, message: { message } });
-      }
-      databaseVar.database_disconnect();
+  let message = "Successfully Updated";
+  if (mongoose.Types.ObjectId.isValid(studentId)) {
+    await databaseVar.database_connection();
+    const updatedStudent = await Student.findByIdAndUpdate(
+      { _id: studentId },
+      req.body,
+      { new: true, runValidators: true }
+    ).then((result) => {
+      // console.log("result in updation =",result);
+      return result;
+    });
+    if (updatedStudent === null) {
+      throw new BadRequestError(
+        `No Student with this id in the params :${studentId}`
+      );
     } else {
-      throw new BadRequestError(`Invalid studentId in the params:${studentId}`);
+      res.status(StatusCodes.OK).json({ updatedStudent, message: { message } });
     }
+    databaseVar.database_disconnect();
+  } else {
+    throw new BadRequestError(`Invalid studentId in the params:${studentId}`);
+  }
 };
 
 module.exports = {
@@ -257,8 +262,3 @@ module.exports = {
   getAllStudents,
   updateStudent,
 };
-
-
-
-
-

@@ -36,12 +36,6 @@ const studentSchema = new mongoose.Schema(
       maxlength: 120,
       trim: true,
     },
-    dept: {
-      type: String,
-      required: [true, "Department name is required"],
-      uppercase: true,
-      trim: true,
-    },
     status: {
       type: String,
       // enum: ["Enrolled", "Passout", "Verified"],
@@ -68,8 +62,14 @@ const studentSchema = new mongoose.Schema(
       minlength: 10,
       maxlength: 10,
       trim: true,
-      required:true
+      required: true,
     },
+    // dept: {
+    //   type: String,
+    //   required: [true, "Department name is required"],
+    //   uppercase: true,
+    //   trim: true,
+    // },
   },
   { timestamps: true }
 );
