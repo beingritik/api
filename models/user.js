@@ -7,13 +7,13 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Please provide name"],
-      match:[
+      match: [
         /^[A-Za-z\s]*$/,
-        "Please provide name without special chars and numbers."
+        "Please provide name without special chars and numbers.",
       ],
       maxlength: 30,
       minlength: 3,
-      trim:true
+      trim: true,
     },
     email: {
       type: String,
@@ -40,15 +40,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Department name is required"],
       uppercase: true,
-      trim:true
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum:["active","inactive"],
+      default:"active",
+      required:true,
     },
   },
   { timestamps: true }
 );
 
 userSchema.pre('save', async function (next) {
-  // console.log("ismodi--",isModified('password'))
-  // if (!this.isModified("password")) return next();
   this.name = this.name.charAt(0).toUpperCase() + this.name.slice(1).toLowerCase();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

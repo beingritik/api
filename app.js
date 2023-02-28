@@ -2,7 +2,7 @@ require("dotenv").config();
 require("express-async-errors");
 const express = require("express");
 const app = express();
-const adminLoginRouter = require("./routes/adminloginrouter");
+const adminLoginRouter = require("./routes/loginrouter");
 const adminRouter = require("./routes/adminRouter");
 const studentRouter = require("./routes/studentRouter");
 const notFoundMiddleware = require('./middleware/notFound');
