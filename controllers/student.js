@@ -4,7 +4,9 @@ const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
 const databaseVar = require("../db/database");
 
-//get single Student by Id
+//////////USER inactive wala validation login authorization pe set krna hai
+
+//get single Student by Id  ( MY ID CARD)
 const getStudent = async function (req, res) {
   // console.log("getStudent called", req.params.id);
   const {
@@ -39,47 +41,41 @@ const updateInfo = async function (req, res) {
     body: { address, bloodgroup, phone },
   } = req;
   let message = "Successfully Updated";
-
   if (mongoose.Types.ObjectId.isValid(studentId)) {
-
     await databaseVar.database_connection();
-    const studentIsVerified = await Student.findOne({ _id: studentId }).then(
-      (result) => {
+    const studentIsVerified = await Student.findOne({ _id: studentId })
+      .then((result) => {
         console.log("User is ", result.status);
         return result;
-      }
-    ).catch((err)=>{
-      return null;
-    })
+      })
+      .catch((err) => {
+        console.log("error in updating info=", err.message);
+        return null;
+      });
     if (studentIsVerified) {
       if (studentIsVerified.status == "Verified") {
-        const userIsActive = await Student.findOne({ _id: studentId })
-          .populate("userId")
-          .then((result) => {
-            // console.log("User is= ", result.userId.status);
-            return result;
-          });
+        
         // console.log("Isactive=", userIsActive.userId.status);
-        if (userIsActive.userId.status == "active") {
-          const updatedInfo = await Student.findByIdAndUpdate(
-            { _id: studentId },
-            { address: address, phone: phone, bloodgroup: bloodgroup },
-            { new: true, runValidators: true }
-          ).then((result) => {
-            // console.log("result in updation =",result);
+        const updatedInfo = await Student.findByIdAndUpdate(
+          { _id: studentId },
+          { address: address, phone: phone, bloodgroup: bloodgroup },
+          { new: true, runValidators: true }
+        )
+          .then((result) => {
             return result;
+          })
+          .catch((err) => {
+            throw err;
           });
-          if (updatedInfo === null) {
-            throw new BadRequestError(
-              `No Student with this id in the params :${studentId}`
-            );
-          } else {
-            res
-              .status(StatusCodes.OK)
-              .json({ updatedInfo, message: { message } });
-          }
+
+        if (updatedInfo === null) {
+          throw new BadRequestError(
+            `No Student with this id in the params :${studentId}`
+          );
         } else {
-          throw new BadRequestError("User is not active.");
+          res
+            .status(StatusCodes.OK)
+            .json({ updatedInfo, message: { message } });
         }
       } else {
         throw new BadRequestError(
