@@ -1,11 +1,11 @@
 const express = require("express");
-const adminLoginRouter = express.Router();
+const adminRouter = express.Router();
 
 //Required controllers for user
 const authControllerVar = require("../controllers/auth");
 
-adminLoginRouter
+adminRouter
 .post("/adminlogin", authControllerVar.adminLogin)
 .post("/userlogin", authControllerVar.userLogin)
 
-module.exports = adminLoginRouter;
+module.exports = adminRouter;

@@ -4,8 +4,6 @@ const { BadRequestError, NotFoundError, customApiError } = require("../errors");
 const mongoose = require("mongoose");
 const databaseVar = require("../db/database");
 
-
-
 //login of User
 const userLogin = async function (req, res) {
   try {
@@ -25,19 +23,26 @@ const userLogin = async function (req, res) {
       // throw new UnauthenticatedError("Invalid Credentials");
       throw new BadRequestError("Invalid password");
     }
-    await user.createJWT().then((token) => {
-      console.log("token is in =", token);
-      res.status(StatusCodes.OK).json({
-        loggedInUser: {
-          name: user.name,
-          username: user.username,
-          userEmail: user.email,
-        },
-        token,
-      });
-    });
-      databaseVar.database_disconnect();
-
+    if (user.status === "active") {
+      await user.createJWT().then((token) => {
+        // console.log("token is in =", token);
+        res.status(StatusCodes.OK).json({
+          loggedInUser: {
+            name: user.name,
+            username: user.username,
+            email: user.email,
+          },
+          token,
+        });
+      })
+      .catch((err)=>{
+        throw err;
+      })
+    }
+    else{
+      throw new BadRequestError("User is inactive. Contact Admin for activation.")
+    }
+    databaseVar.database_disconnect();
   } catch (err) {
     console.log("error in adminLogin function is=", err.message);
     throw err;

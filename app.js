@@ -2,7 +2,7 @@ require("dotenv").config();
 require("express-async-errors");
 const express = require("express");
 const app = express();
-const adminLoginRouter = require("./routes/loginrouter");
+const LoginRouter = require("./routes/loginrouter");
 const adminRouter = require("./routes/adminRouter");
 const studentRouter = require("./routes/studentRouter");
 const notFoundMiddleware = require('./middleware/notFound');
@@ -13,10 +13,11 @@ app.use(express.json());
 
 // Middlewares for user
 app.use('/admin',adminRouter);
-app.use("", adminLoginRouter);
+app.use("", LoginRouter);
 app.use("/student", studentRouter);
+
 //common route for dashboard
-// app.get("/", async (req, res) => {
+// app.get("/", asyn (req, res) => {
 //   res.send("Dashboard");
 // });
 
@@ -25,12 +26,12 @@ app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 
+
+
+
 //Calling the port 
 const port = process.env.PORT || 3001;
 app.listen(port,()=>{
   console.log(`Server is listening on ${port}`);
 });
 
-
-
- 
