@@ -106,17 +106,44 @@ const createFeedback = async function (req, res) {
 
 //delete feedback
 const deleteFeedback = async function (req, res) {
-   try {
-     console.log("deletion of feedback entered with ");
-     const {
-       params: { id: userId },
-     } = req;
-
-   } catch (err) {
-     console.log("Error in deleting feedback is - ", err.message);
-     throw err;
-   }
+  try {
+    const {
+      params: { id: feedbackId },
+    } = req;
+    let message = "Successfully deleted";
+    const validFeedback = mongoose.Types.ObjectId.isValid(feedbackId);
+    if (validFeedback) {
+      await databaseVar.database_connection();
+      const deletedFeedback = await Feedback.findOneAndDelete({
+        _id: feedbackId,
+      })
+        .then((result) => {
+          return result;
+        })
+        .catch((err) => {
+          throw err;
+        });
+      console.log("Deleted Feedback--", deletedFeedback);
+      if (deletedFeedback === null) {
+        throw new BadRequestError(
+          `No student with this feedbackId: ${feedbackId}`
+        );
+      } else
+        res
+          .status(StatusCodes.OK)
+          .json({ deletedFeedback, message: { message } });
+    } else {
+      throw new BadRequestError(
+        `Invalid ID passed in the params ${feedbackId}`
+      );
+    }
+    databaseVar.database_disconnect();
+  } catch (err) {
+    console.log("Error in the deletefeedback function is=", err.message);
+    throw err;
+  }
 };
+
 
 module.exports = {
   getAllFeedback,
