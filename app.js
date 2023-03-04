@@ -7,6 +7,7 @@ const adminRouter = require("./routes/adminRouter");
 const studentRouter = require("./routes/studentRouter");
 const notFoundMiddleware = require('./middleware/notFound');
 const {errorHandlerMiddleware} = require("./middleware/errorhandler");
+const membershipRouter = require("./routes/membershiprouter");
 
 //Required dependencies 
 app.use(express.json());
@@ -14,7 +15,7 @@ app.use(express.json());
 // Middlewares for user
 app.use('/admin',adminRouter);
 app.use("", LoginRouter);
-app.use("/student", studentRouter);
+app.use("/student", studentRouter,membershipRouter);
 
 //common route for dashboard
 // app.get("/", asyn (req, res) => {
